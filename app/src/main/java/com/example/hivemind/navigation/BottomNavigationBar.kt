@@ -2,8 +2,10 @@ package com.example.hivemind.navigation
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.hivemind.navigation.Screen
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
@@ -16,7 +18,8 @@ fun BottomNavigationBar(navController: NavController) {
     )
 
     NavigationBar {
-        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
 
         screens.forEach { screen ->
             NavigationBarItem(
@@ -26,7 +29,7 @@ fun BottomNavigationBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != screen.route) {
                         navController.navigate(screen.route) {
-                            popUpTo(Screen.Home.route) { saveState = true }
+                            popUpTo(Screen.Home.route) { inclusive = true }
                             launchSingleTop = true
                             restoreState = true
                         }
