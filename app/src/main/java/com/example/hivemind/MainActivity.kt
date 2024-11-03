@@ -13,8 +13,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.hivemind.ui.theme.HiveMindTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+         binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+          val navController = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment)!!
+            .findNavController()
+
+        // Set up BottomNavigationView
+        binding.bottomNavigationView.setupWithNavController(navController)
+        
         setContent {
             HiveMindTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
