@@ -7,13 +7,13 @@ plugins {
 
 android {
     namespace = "com.example.hivemind"
-    compileSdk = 34 // Updated to the latest stable version
+    compileSdk = 35 // Updated to the latest stable version
 
     defaultConfig {
         applicationId = "com.example.hivemind"
         minSdk = 24
         //noinspection OldTargetApi
-        targetSdk = 34 // Updated to the latest stable version
+        targetSdk = 35 // Updated to the latest stable version
         versionCode = 1
         versionName = "1.0"
 
@@ -48,8 +48,11 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.materialIconsExtended)
 
-    // Testing dependencies
+
+
+            // Testing dependencies
     testImplementation(libs.junit)
     //noinspection GradleDependency
     androidTestImplementation(libs.ui.test.junit4)
