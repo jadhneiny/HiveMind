@@ -20,7 +20,7 @@ fun CoursesScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF495A62)) // Apply consistent background color
+            .background(Color(0xFFAD42F7)) // Apply consistent background color
             .padding(16.dp)
     ) {
         Text(

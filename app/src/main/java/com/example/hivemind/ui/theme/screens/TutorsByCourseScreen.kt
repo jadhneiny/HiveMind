@@ -19,18 +19,18 @@ fun TutorsByCourseScreen(courseName: String, navController: NavController) {
         "Carol Davis" to "Biology",
         "David Wilson" to "Computer Science",
         "Eva Brown" to "Chemistry"
-    ).filter { it.second == courseName } // Filter tutors by course
+    ).filter { it.second == courseName }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF495A62)) // Consistent background color
+            .background(Color(0xFFAD42F7))
             .padding(16.dp)
     ) {
         Text(
             text = "Tutors for $courseName",
             style = MaterialTheme.typography.headlineMedium,
-            color = Color.White, // Set text color to white
+            color = Color.White,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -40,14 +40,14 @@ fun TutorsByCourseScreen(courseName: String, navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
-                    .background(Color.White.copy(alpha = 0.1f)) // Light background for each tutor item
+                    .background(Color.White.copy(alpha = 0.1f))
                     .clickable {
-                        // Navigate to ChatDetailScreen with selected tutor's name
-                        navController.navigate("chatDetail/$tutorName")
+                        // Navigate to MyProfileScreen with selected tutor's name
+                        navController.navigate("tutorProfile/$tutorName")
                     }
-                    .padding(16.dp), // Inner padding for readability
+                    .padding(16.dp),
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White // Set text color to white
+                color = Color.White
             )
         }
     }

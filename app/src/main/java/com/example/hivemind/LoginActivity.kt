@@ -1,5 +1,6 @@
 package com.example.hivemind
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -15,12 +16,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.hivemind.ui.theme.HiveMindTheme
 
@@ -40,13 +39,14 @@ fun LoginScreen() {
     val context = LocalContext.current
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isTutor by remember { mutableStateOf(false) }  // State to track if the user is a tutor
 
     Scaffold(
         content = { innerPadding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF495A62)) // Background color
+                    .background(Color(0xFFAD42F7))  // Background color
                     .padding(innerPadding)
             ) {
                 Column(
@@ -56,25 +56,30 @@ fun LoginScreen() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Logo at the top
                     Image(
-                        painter = painterResource(id = R.drawable.hivemind), // Replace with actual logo resource ID
+                        painter = painterResource(id = R.drawable.logo),  // Use the correct resource ID
                         contentDescription = "HiveMind Logo",
                         modifier = Modifier
                             .size(220.dp)
                             .padding(bottom = 24.dp),
-
                     )
 
-                    Text(
-                        text = "Login to HiveMind",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = Color.White
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Login as Tutor", color = Color.White)
+                        Switch(
+                            checked = isTutor,
+                            onCheckedChange = { isTutor = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                uncheckedThumbColor = Color.Gray
+                            )
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Username Field
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
@@ -96,7 +101,6 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Password Field
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -118,12 +122,12 @@ fun LoginScreen() {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Login Button
                     Button(
                         onClick = {
                             if (username.isNotEmpty() && password.isNotEmpty()) {
-                                Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-                                context.startActivity(Intent(context, MainActivity::class.java))
+                                saveUserLogin(isTutor, context)  // Save the tutor status when logging in
+                                Toast.makeText(context, if (isTutor) "Tutor login successful!" else "Login successful!", Toast.LENGTH_SHORT).show()
+                                context.startActivity(Intent(context, MainActivity::class.java))  // Navigate to MainActivity
                             } else {
                                 Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                             }
@@ -133,13 +137,13 @@ fun LoginScreen() {
                             .padding(vertical = 8.dp)
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF607D8B),
+                            containerColor = Color(0xFFAD42F7),
                             contentColor = Color.White
                         ),
                         shape = RoundedCornerShape(12.dp),
                         elevation = ButtonDefaults.buttonElevation(8.dp)
                     ) {
-                        Text(text = "Login")
+                        Text(text = if (isTutor) "Login as Tutor" else "Login")
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -157,10 +161,10 @@ fun LoginScreen() {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    HiveMindTheme {
-        LoginScreen()
+fun saveUserLogin(isTutor: Boolean, context: Context) {
+    val sharedPreferences = context.getSharedPreferences("UserLoginPrefs", Context.MODE_PRIVATE)
+    with (sharedPreferences.edit()) {
+        putBoolean("isTutor", isTutor)
+        apply()
     }
 }

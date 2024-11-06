@@ -15,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -41,13 +40,14 @@ fun RegisterScreen() {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var isTutor by remember { mutableStateOf(false) }  // State to track if the user is registering as a tutor
 
     Scaffold(
         content = { innerPadding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF495A62)) // Background color
+                    .background(Color(0xFFAD42F7)) // Background color
                     .padding(innerPadding)
             ) {
                 Column(
@@ -57,14 +57,12 @@ fun RegisterScreen() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Logo at the top
                     Image(
-                        painter = painterResource(id = R.drawable.hivemind), // Replace with actual logo resource ID
+                        painter = painterResource(id = R.drawable.logo), // Replace with actual logo resource ID
                         contentDescription = "HiveMind Logo",
                         modifier = Modifier
                             .size(220.dp)
                             .padding(bottom = 24.dp),
-
                     )
 
                     Text(
@@ -73,7 +71,21 @@ fun RegisterScreen() {
                         color = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Register as Tutor", color = Color.White)
+                        Switch(
+                            checked = isTutor,
+                            onCheckedChange = { isTutor = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                uncheckedThumbColor = Color.Gray
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Username Field
                     OutlinedTextField(
@@ -156,7 +168,7 @@ fun RegisterScreen() {
                             .padding(vertical = 8.dp)
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF607D8B),
+                            containerColor = Color(0xFFAD42F7),
                             contentColor = Color.White
                         ),
                         shape = RoundedCornerShape(12.dp),
