@@ -26,7 +26,7 @@ fun ChatScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF495A62)) // Set consistent background color
+            .background(Color(0xFFAD42F7)) // Set consistent background color
             .padding(16.dp)
     ) {
         Text(

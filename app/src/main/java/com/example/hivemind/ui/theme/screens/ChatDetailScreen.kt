@@ -20,7 +20,7 @@ fun ChatDetailScreen(tutorName: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF495A62)) // Consistent background color
+            .background(Color(0xFFAD42F7)) // Consistent background color
             .padding(16.dp)
     ) {
         Text(

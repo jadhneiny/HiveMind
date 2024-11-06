@@ -1,5 +1,6 @@
 package com.example.hivemind.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,20 +27,20 @@ fun TutorsScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF495A62)) // Consistent background color
+            .background(Color(0xFFAD42F7)) // Consistent background color
             .padding(16.dp)
     ) {
         Text(
             text = "Available Tutors",
             style = MaterialTheme.typography.headlineMedium,
-            color = Color.White, // Set text color to white for contrast
+            color = Color.White,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         tutors.forEach { tutor ->
             TutorCard(tutor = tutor) {
-                // Navigate to ChatDetailScreen for the selected tutor
-                navController.navigate(Screen.ChatDetail.createRoute(tutor.name))
+                // Navigate to MyProfileScreen with the selected tutor's name
+                navController.navigate("tutorProfile/${tutor.name}")
             }
         }
     }
@@ -53,7 +54,7 @@ fun TutorCard(tutor: Tutor, onClick: () -> Unit) {
             .padding(vertical = 8.dp)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.1f) // Semi-transparent background for the card
+            containerColor = Color.White.copy(alpha = 0.1f)
         ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -62,12 +63,12 @@ fun TutorCard(tutor: Tutor, onClick: () -> Unit) {
                 Text(
                     text = tutor.name,
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.White // Set text color to white for visibility
+                    color = Color.White
                 )
                 Text(
                     text = "Course: ${tutor.course}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f) // Slightly lighter color for secondary text
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
         }

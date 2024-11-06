@@ -18,7 +18,7 @@ fun BottomNavigationBar(navController: NavController) {
     )
 
     NavigationBar(
-        containerColor = Color(0xFF495A62), // Background color for consistency
+        containerColor = Color(0xFFAD42F7), // Background color for consistency
         contentColor = Color.White // Icon and label color
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
