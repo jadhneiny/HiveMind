@@ -33,7 +33,6 @@ class LoginActivity : ComponentActivity() {
         }
     }
 }
-// test commentt
 @Composable
 fun LoginScreen() {
     val context = LocalContext.current
