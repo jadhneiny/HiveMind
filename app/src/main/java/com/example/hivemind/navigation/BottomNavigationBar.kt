@@ -8,14 +8,23 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
-    val screens = listOf(
-        Screen.Home,
-        Screen.Courses,
-        Screen.Schedule,
-        Screen.Tutors,
-        Screen.Chat
-    )
+fun BottomNavigationBar(navController: NavController, isTutor: Boolean) {
+    val screens = if (isTutor) {
+        listOf(
+            Screen.Home,
+            Screen.Courses,
+            Screen.Schedule,
+            Screen.Chat
+        )
+    } else {
+        listOf(
+            Screen.Home,
+            Screen.Courses,
+            Screen.Schedule,
+            Screen.Tutors,
+            Screen.Chat
+        )
+    }
 
     NavigationBar(
         containerColor = Color(0xFFAD42F7), // Background color for consistency
@@ -39,7 +48,7 @@ fun BottomNavigationBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != screen.route) {
                         navController.navigate(screen.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
+                            popUpTo(Screen.Home.route) { inclusive = false }
                             launchSingleTop = true
                             restoreState = true
                         }

@@ -1,4 +1,4 @@
-package com.example.hivemind.ui.screens
+package com.example.hivemind.ui.theme.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme

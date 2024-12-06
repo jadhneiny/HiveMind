@@ -9,11 +9,16 @@ import com.example.hivemind.navigation.BottomNavigationBar
 import com.example.hivemind.navigation.NavigationHost
 
 @Composable
-fun MainScreen() {
+fun MainScreen(isTutor: Boolean, currentUserId: Int) { // Add currentUserId parameter
     val navController = rememberNavController()
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { BottomNavigationBar(navController, isTutor) }
     ) { innerPadding ->
-        NavigationHost(navController, Modifier.padding(innerPadding))
+        NavigationHost(
+            navController = navController,
+            modifier = Modifier.padding(innerPadding),
+            isTutor = isTutor,
+            currentUserId = currentUserId // Pass currentUserId to NavigationHost
+        )
     }
 }

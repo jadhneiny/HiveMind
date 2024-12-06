@@ -3,13 +3,13 @@ package com.example.hivemind
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,7 +21,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.hivemind.network.ApiClient
 import com.example.hivemind.ui.theme.HiveMindTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,126 +38,119 @@ class LoginActivity : ComponentActivity() {
         }
     }
 }
+
 @Composable
 fun LoginScreen() {
     val context = LocalContext.current
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isTutor by remember { mutableStateOf(false) }  // State to track if the user is a tutor
+    var isTutor by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold(
         content = { innerPadding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFAD42F7))  // Background color
+                    .background(Color(0xFFAD42F7))
                     .padding(innerPadding)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logo),  // Use the correct resource ID
-                        contentDescription = "HiveMind Logo",
-                        modifier = Modifier
-                            .size(220.dp)
-                            .padding(bottom = 24.dp),
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White
                     )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "HiveMind Logo",
+                            modifier = Modifier
+                                .size(220.dp)
+                                .padding(bottom = 24.dp),
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Login as Tutor", color = Color.White)
+                            Switch(
+                                checked = isTutor,
+                                onCheckedChange = { isTutor = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    uncheckedThumbColor = Color.Gray
+                                )
+                            )
+                        }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Login as Tutor", color = Color.White)
-                        Switch(
-                            checked = isTutor,
-                            onCheckedChange = { isTutor = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                uncheckedThumbColor = Color.Gray
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            label = { Text("Username", color = Color.White) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
                             )
                         )
-                    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    OutlinedTextField(
-                        value = username,
-                        onValueChange = { username = it },
-                        label = { Text("Username", color = Color.White) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password", color = Color.White) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            )
                         )
-                    )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Password", color = Color.White) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = {
-                            if (username.isNotEmpty() && password.isNotEmpty()) {
-                                saveUserLogin(isTutor, context)  // Save the tutor status when logging in
-                                Toast.makeText(context, if (isTutor) "Tutor login successful!" else "Login successful!", Toast.LENGTH_SHORT).show()
-                                context.startActivity(Intent(context, MainActivity::class.java))  // Navigate to MainActivity
-                            } else {
-                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFAD42F7),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        elevation = ButtonDefaults.buttonElevation(8.dp)
-                    ) {
-                        Text(text = if (isTutor) "Login as Tutor" else "Login")
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            context.startActivity(Intent(context, RegisterActivity::class.java))
+                        Button(
+                            onClick = {
+                                if (username.isNotEmpty() && password.isNotEmpty()) {
+                                    isLoading = true
+                                    loginUser(username, password, context, isTutor) { success ->
+                                        isLoading = false
+                                        if (success) {
+                                            context.startActivity(
+                                                Intent(context, MainActivity::class.java)
+                                            )
+                                            (context as ComponentActivity).finish()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Invalid credentials. Please try again.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                        ) {
+                            Text(text = if (isTutor) "Login as Tutor" else "Login")
                         }
-                    ) {
-                        Text(text = "Don't have an account? Register", color = Color.White)
                     }
                 }
             }
@@ -160,10 +158,35 @@ fun LoginScreen() {
     )
 }
 
-fun saveUserLogin(isTutor: Boolean, context: Context) {
-    val sharedPreferences = context.getSharedPreferences("UserLoginPrefs", Context.MODE_PRIVATE)
-    with (sharedPreferences.edit()) {
-        putBoolean("isTutor", isTutor)
-        apply()
+fun loginUser(username: String, password: String, context: Context, isTutor: Boolean, callback: (Boolean) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = ApiClient.apiService.login(username, password)
+            if (response.isSuccessful) {
+                val loginResponse = response.body()
+                if (loginResponse != null) {
+                    saveUserLogin(loginResponse.access_token, isTutor, context)
+                    withContext(Dispatchers.Main) { callback(true) }
+                } else {
+                    withContext(Dispatchers.Main) { callback(false) }
+                }
+            } else {
+                withContext(Dispatchers.Main) { callback(false) }
+            }
+
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) { callback(false) }
+        }
     }
 }
+
+fun saveUserLogin(userId: Int, isTutor: Boolean, context: Context) {
+    val sharedPreferences = context.getSharedPreferences("UserLoginPrefs", Context.MODE_PRIVATE)
+    with(sharedPreferences.edit()) {
+        putInt("userId", userId) // Save the user ID
+        putBoolean("isTutor", isTutor) // Save the tutor status
+        apply()
+    }
+    Log.d("LoginActivity", "Saved userId: $userId, isTutor: $isTutor")
+}
+

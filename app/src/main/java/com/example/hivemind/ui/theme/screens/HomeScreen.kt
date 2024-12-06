@@ -1,31 +1,38 @@
-package com.example.hivemind.ui.screens
+package com.example.hivemind.ui.theme.screens
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.hivemind.R
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import com.example.hivemind.models.Course
+import com.example.hivemind.network.ApiClient
+import com.example.hivemind.navigation.BottomNavigationBar
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,11 +40,34 @@ fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("UserLoginPrefs", Context.MODE_PRIVATE)
     val isTutor = sharedPreferences.getBoolean("isTutor", false)
+
     val backgroundBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFFAD42F7), Color(0xFF6200EE))
     )
     val images = listOf(R.drawable.slideone, R.drawable.slidetwo)
+    var courses by remember { mutableStateOf<List<Course>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
     var showModal by remember { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val response = ApiClient.apiService.getCourses()
+                if (response.isSuccessful) {
+                    courses = response.body() ?: emptyList()
+                    Log.d("HomeScreen", "Courses fetched: $courses")
+                } else {
+                    Log.e("HomeScreen", "Failed to fetch courses: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("HomeScreen", "Error fetching courses", e)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -51,25 +81,28 @@ fun HomeScreen(navController: NavController) {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xFFAD42F7))
             )
         },
-        containerColor = Color(0xFF6200EE)
+        containerColor = Color(0xFF6200EE),
+        bottomBar = {
+            BottomNavigationBar(navController = navController, isTutor = isTutor)
+        }
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .background(backgroundBrush)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())  // Enables vertical scrolling for overflowing content
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Logo at the top of the slideshow
+            // Logo at the top
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "HiveMind Logo",
                 modifier = Modifier.size(150.dp)
             )
 
-            // Slideshow Component
+            // Slideshow
             LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(vertical = 8.dp)) {
                 items(images) { image ->
                     Image(
@@ -85,7 +118,7 @@ fun HomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Title for Courses
+            // Courses Section
             Text(
                 text = if (isTutor) "My Courses" else "Available Courses",
                 style = MaterialTheme.typography.headlineMedium,
@@ -94,17 +127,33 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier.align(Alignment.Start)
             )
 
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(8.dp)) {
-                if (!isTutor) {
-                    CourseIcon(title = "English", icon = Icons.Default.MenuBook, navController = navController)
-                    CourseIcon(title = "Mathematics", icon = Icons.Default.Calculate, navController = navController)
-                    CourseIcon(title = "Computer Science", icon = Icons.Default.Computer, navController = navController)
-                    CourseIcon(title = "Physics", icon = Icons.Default.Science, navController = navController)
-                    CourseIcon(title = "Chemistry", icon = Icons.Default.Biotech, navController = navController)
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp), color = Color.White)
+            } else if (courses.isEmpty()) {
+                Text(
+                    text = "No courses available at the moment.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                )
+            } else {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    items(courses) { course ->
+                        CourseIcon(
+                            title = course.name,
+                            icon = Icons.AutoMirrored.Filled.MenuBook,
+                            navController = navController
+                        )
+                    }
                 }
             }
 
-            // New Action Cards with Enhanced Style
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Action Cards
             EnhancedActionCard(
                 title = "Schedule Planning",
                 description = "Plan your study schedule.",
@@ -115,14 +164,14 @@ fun HomeScreen(navController: NavController) {
             EnhancedActionCard(
                 title = if (isTutor) "Chat" else "Chat with Tutor",
                 description = if (isTutor) "Message your students or staff." else "Get help in real-time.",
-                icon = Icons.Default.Chat,
+                icon = Icons.AutoMirrored.Filled.Chat,
                 navController = navController,
                 route = "ChatScreen"
             )
         }
     }
 
-    // Modal for Profile and Sign Out Options
+    // Modal for menu
     if (showModal) {
         ModalBottomSheet(onDismissRequest = { showModal = false }) {
             Column(
@@ -136,41 +185,22 @@ fun HomeScreen(navController: NavController) {
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(8.dp)
                 )
-                Divider(color = Color.Gray, thickness = 1.dp)
+                HorizontalDivider(color = Color.Gray, thickness = 1.dp)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // My Profile Button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            navController.navigate("myProfile")  // Navigate to MyProfileScreen
-                        }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.Person, contentDescription = "My Profile", tint = Color.Gray)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("My Profile", color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Sign Out Button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            navController.popBackStack()
-                            navController.navigate("loginScreen")
-                        }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out", tint = Color.Gray)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sign Out", color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
-                }
+                MenuItem(
+                    title = "My Profile",
+                    icon = Icons.Default.Person,
+                    onClick = { navController.navigate("myProfile") }
+                )
+                MenuItem(
+                    title = "Sign Out",
+                    icon = Icons.AutoMirrored.Filled.ExitToApp,
+                    onClick = {
+                        navController.popBackStack()
+                        navController.navigate("loginScreen")
+                    }
+                )
             }
         }
     }
@@ -196,7 +226,13 @@ fun EnhancedActionCard(title: String, description: String, icon: ImageVector, na
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { navController.navigate(route) },
+            .clickable {
+                try {
+                    navController.navigate(route)
+                } catch (e: Exception) {
+                    Log.e("EnhancedActionCard", "Navigation error: ${e.localizedMessage}")
+                }
+            },
         colors = CardDefaults.cardColors(containerColor = Color(0xFFAD42F7)),
         elevation = CardDefaults.cardElevation(6.dp),
         shape = RoundedCornerShape(16.dp)
@@ -218,3 +254,19 @@ fun EnhancedActionCard(title: String, description: String, icon: ImageVector, na
         }
     }
 }
+
+@Composable
+fun MenuItem(title: String, icon: ImageVector, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = title, tint = Color.Gray)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(title, color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
