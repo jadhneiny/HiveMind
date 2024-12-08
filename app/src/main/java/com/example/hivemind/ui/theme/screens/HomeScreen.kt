@@ -197,8 +197,11 @@ fun HomeScreen(navController: NavController) {
                     title = "Sign Out",
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
                     onClick = {
-                        navController.popBackStack()
-                        navController.navigate("loginScreen")
+                        // Clear SharedPreferences and navigate to the login screen
+                        sharedPreferences.edit().clear().apply()
+                        navController.navigate("loginScreen") {
+                            popUpTo(0) { inclusive = true } // Clears all back stack
+                        }
                     }
                 )
             }
