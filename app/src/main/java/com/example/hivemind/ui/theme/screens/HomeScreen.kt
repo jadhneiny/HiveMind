@@ -1,5 +1,4 @@
 package com.example.hivemind.ui.theme.screens
-
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -32,6 +31,7 @@ import com.example.hivemind.R
 import com.example.hivemind.models.Course
 import com.example.hivemind.network.ApiClient
 import com.example.hivemind.navigation.BottomNavigationBar
+import com.example.hivemind.navigation.Screen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,14 +159,14 @@ fun HomeScreen(navController: NavController) {
                 description = "Plan your study schedule.",
                 icon = Icons.Default.Event,
                 navController = navController,
-                route = "ScheduleScreen"
+                route = Screen.Schedule.route // Fixed navigation route
             )
             EnhancedActionCard(
                 title = if (isTutor) "Chat" else "Chat with Tutor",
                 description = if (isTutor) "Message your students or staff." else "Get help in real-time.",
                 icon = Icons.AutoMirrored.Filled.Chat,
                 navController = navController,
-                route = "ChatScreen"
+                route = Screen.Chat.route // Fixed navigation route
             )
         }
     }
@@ -205,6 +205,7 @@ fun HomeScreen(navController: NavController) {
         }
     }
 }
+
 
 @Composable
 fun CourseIcon(title: String, icon: ImageVector, navController: NavController) {
