@@ -29,6 +29,7 @@ fun ChatDetailScreen(chatId: Int, displayName: String, currentUserId: Int) {
         coroutineScope.launch {
             try {
                 val response = ApiClient.apiService.getMessagesForChat(chatId)
+                Log.d("ChatDetailScreen", "Request URL: https://hive-mind-backend.vercel.app/chats/$chatId/messages")
                 if (response.isSuccessful) {
                     messages = response.body() ?: emptyList()
                 } else {

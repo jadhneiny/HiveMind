@@ -4,8 +4,11 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -18,9 +21,10 @@ import retrofit2.Response
 
 @Composable
 fun TutorsByCourseScreen(courseName: String, navController: NavController) {
-    var tutors by remember { mutableStateOf<List<User>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    // Use mutableStateOf with a specific type to resolve `TypeVariable(T)` issues
+    var tutors: List<User> by remember { mutableStateOf(emptyList()) }
+    var isLoading: Boolean by remember { mutableStateOf(true) }
+    var errorMessage: String? by remember { mutableStateOf(null) }
 
     LaunchedEffect(courseName) {
         isLoading = true
@@ -43,7 +47,7 @@ fun TutorsByCourseScreen(courseName: String, navController: NavController) {
         })
     }
 
-
+    // UI Layout
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,13 +62,15 @@ fun TutorsByCourseScreen(courseName: String, navController: NavController) {
         )
 
         if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 32.dp),
-                color = Color.White
-            )
+            // Show a loading indicator
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
         } else if (errorMessage != null) {
+            // Show error message
             Text(
                 text = errorMessage ?: "Unknown error.",
                 style = MaterialTheme.typography.bodyLarge,
@@ -72,22 +78,42 @@ fun TutorsByCourseScreen(courseName: String, navController: NavController) {
                 modifier = Modifier.padding(top = 16.dp)
             )
         } else {
-            tutors.forEach { tutor ->
-                Text(
-                    text = tutor.username,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .background(Color.White.copy(alpha = 0.1f))
-                        .clickable {
-                            // Navigate to Tutor Profile Screen
-                            navController.navigate("tutorProfile/${tutor.username}")
-                        }
-                        .padding(16.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White
-                )
+            // Show tutors in a scrollable list
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(tutors) { tutor ->
+                    TutorCard(tutor = tutor, navController = navController)
+                }
             }
         }
+    }
+}
+
+@Composable
+fun TutorCard(tutor: User, navController: NavController) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("tutorProfile/${tutor.username}") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.1f)
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Text(
+            text = tutor.username, // Ensure the `username` property exists in the `User` model
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

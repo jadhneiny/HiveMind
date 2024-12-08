@@ -15,10 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.hivemind.models.Course
 import com.example.hivemind.network.ApiClient
+import com.example.hivemind.navigation.BottomNavigationBar
 import kotlinx.coroutines.launch
 
 @Composable
-fun CoursesScreen(navController: NavController) {
+fun CoursesScreen(navController: NavController, isTutor: Boolean) { // Include isTutor
     var courses by remember { mutableStateOf<List<Course>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -42,41 +43,48 @@ fun CoursesScreen(navController: NavController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFAD42F7))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Available Courses",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.White
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center // Use Alignment.Center for loading indicator
-            ) {
-                CircularProgressIndicator(color = Color.White)
-            }
-        } else if (courses.isEmpty()) {
+    // Use Scaffold to ensure the bottom navigation is visible
+    Scaffold(
+        containerColor = Color(0xFFAD42F7),
+        bottomBar = { BottomNavigationBar(navController = navController, isTutor = isTutor) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFAD42F7))
+                .padding(16.dp)
+        ) {
             Text(
-                text = "No courses available at the moment.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
-                modifier = Modifier.padding(16.dp)
+                text = "Available Courses",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White
             )
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(courses) { course ->
-                    CourseCard(course = course, navController = navController)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+            } else if (courses.isEmpty()) {
+                Text(
+                    text = "No courses available at the moment.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(courses) { course ->
+                        CourseCard(course = course, navController = navController)
+                    }
                 }
             }
         }
@@ -90,7 +98,12 @@ fun CourseCard(course: Course, navController: NavController) {
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable {
-                navController.navigate("tutorsByCourse/${course.name}")
+                navController.navigate("tutorsByCourse/${course.name}") {
+                    // Ensure the stack is maintained and the navigation bar remains
+                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             },
         colors = CardDefaults.cardColors(
             containerColor = Color.White.copy(alpha = 0.1f)

@@ -2,27 +2,24 @@ package com.example.hivemind.ui.theme.screens
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.hivemind.models.Chat
 import com.example.hivemind.network.ApiClient
+import com.example.hivemind.navigation.BottomNavigationBar
 import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun ChatScreen(navController: NavController) {
+fun ChatScreen(navController: NavController, isTutor: Boolean) { // Add isTutor parameter
     val coroutineScope = rememberCoroutineScope()
     var activeChats by remember { mutableStateOf<List<Chat>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -30,7 +27,6 @@ fun ChatScreen(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("UserLoginPrefs", Context.MODE_PRIVATE)
     val userId = sharedPreferences.getInt("userId", -1)
-    val isTutor = sharedPreferences.getBoolean("isTutor", false)
 
     if (userId == -1) {
         errorMessage = "Error: User ID not found. Please log in again."
@@ -54,41 +50,50 @@ fun ChatScreen(navController: NavController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFAD42F7))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Active Chats",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.White,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        if (isLoading) {
-            CircularProgressIndicator(
+    // Use Scaffold to include BottomNavigationBar
+    Scaffold(
+        containerColor = Color(0xFFAD42F7), // Background color
+        bottomBar = { BottomNavigationBar(navController = navController, isTutor = isTutor) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFAD42F7))
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Active Chats",
+                style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-        } else if (!errorMessage.isNullOrEmpty()) {
-            Text(
-                text = errorMessage!!,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Red,
-                modifier = Modifier.padding(top = 16.dp)
-            )
-        } else if (activeChats.isEmpty()) {
-            Text(
-                text = "No Active Chats",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-        } else {
-            activeChats.forEach { chat ->
-                ChatListItem(chat = chat, isTutor = isTutor, navController = navController)
+
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            } else if (!errorMessage.isNullOrEmpty()) {
+                Text(
+                    text = errorMessage!!,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Red,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            } else if (activeChats.isEmpty()) {
+                Text(
+                    text = "No Active Chats",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    activeChats.forEach { chat ->
+                        ChatListItem(chat = chat, isTutor = isTutor, navController = navController)
+                    }
+                }
             }
         }
     }
@@ -103,7 +108,7 @@ fun ChatListItem(chat: Chat, isTutor: Boolean, navController: NavController) {
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable {
-                navController.navigate("chatDetail/${chat.tutorId}/${chat.id}/${displayName}")
+                navController.navigate("chatDetail/${chat.id}/${displayName}")
             },
         colors = CardDefaults.cardColors(
             containerColor = Color.White.copy(alpha = 0.1f)

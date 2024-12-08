@@ -19,19 +19,19 @@ fun NavigationHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     isTutor: Boolean,
-    currentUserId: Int // Add this parameter to pass the logged-in user's ID
+    currentUserId: Int // Pass the logged-in user's ID
 ) {
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         composable(Screen.Home.route) { HomeScreen(navController) }
-        composable(Screen.Courses.route) { CoursesScreen(navController) }
+        composable(Screen.Courses.route) { CoursesScreen(navController = navController, isTutor = isTutor) }
         composable(Screen.Schedule.route) { ScheduleScreen() }
 
         if (!isTutor) {
             // Non-tutor specific routes
-            composable(Screen.Tutors.route) { TutorsScreen(navController) }
+            composable(Screen.Tutors.route) { TutorsScreen(navController = navController, isTutor = isTutor) }
         }
 
-        composable(Screen.Chat.route) { ChatScreen(navController) }
+        composable(Screen.Chat.route) { ChatScreen(navController = navController, isTutor = isTutor) }
 
         // Profile route for each tutor
         composable("tutorProfile/{tutorName}") { backStackEntry ->
@@ -92,24 +92,20 @@ fun NavigationHost(
 
         // Dynamic route for TutorsByCourse with courseName as parameter
         composable("tutorsByCourse/{courseName}") { backStackEntry ->
-            val courseName = backStackEntry.arguments?.getString("courseName")
-            TutorsByCourseScreen(courseName = courseName ?: "Unknown Course", navController = navController)
+            val courseName = backStackEntry.arguments?.getString("courseName") ?: "Unknown Course"
+            TutorsByCourseScreen(courseName = courseName, navController = navController)
         }
 
-        // Dynamic route for ChatDetail with tutorId, chatId, and displayName as parameters
-        composable("chatDetail/{tutorId}/{chatId}/{displayName}") { backStackEntry ->
-            val tutorId = backStackEntry.arguments?.getString("tutorId")?.toIntOrNull() ?: 0
+        // Dynamic route for ChatDetail with chatId, displayName, and currentUserId
+        composable("chatDetail/{chatId}/{displayName}") { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId")?.toIntOrNull() ?: 0
             val displayName = backStackEntry.arguments?.getString("displayName") ?: "Unknown"
 
-            // Pass the currentUserId to ChatDetailScreen
             ChatDetailScreen(
                 chatId = chatId,
                 displayName = displayName,
                 currentUserId = currentUserId
             )
-
         }
     }
 }
-
